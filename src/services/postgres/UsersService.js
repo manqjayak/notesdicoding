@@ -28,6 +28,16 @@ class UsersService {
     return id;
   }
 
+  async getUsersByUsername(username) {
+    console.log(username);
+    const query = {
+      text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
+      values: [`%${username}%`],
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
+
   async addUser({ username, password, fullname }) {
     // TODO: Verifikasi username, pastikan belum terdaftar.
     await this.verifyNewUsername(username);

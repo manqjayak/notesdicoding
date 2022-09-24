@@ -19,8 +19,16 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 
+// collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
+const CollaborationsValidator = require('./validator/collaborations');
+
+// kode impor disembunyikan
+
 const init = async () => {
-  const notesService = new NotesService();
+  const collaborationsService = new CollaborationsService();
+  const notesService = new NotesService(collaborationsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
 
@@ -34,14 +42,14 @@ const init = async () => {
     },
   });
 
-  // server.route(routes);
   // registrasi plugin eksternal
   await server.register([
     {
       plugin: Jwt,
     },
   ]);
-  // mendefinisikan strategy autentikasi jwt
+
+  // mendefinisikan strategy otentikasi jwt
   server.auth.strategy('notesapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
@@ -82,6 +90,14 @@ const init = async () => {
         validator: AuthenticationsValidator,
       },
     },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        notesService,
+        validator: CollaborationsValidator,
+      },
+    },
   ]);
 
   await server.start();
@@ -90,16 +106,96 @@ const init = async () => {
 
 init();
 
-// const notesPlugin = require('./notesPlugin');
-// const Hapi = require('@hapi/hapi');
 // const init = async () => {
-//   const server = Hapy.server();
+//   const collaborationsService = new CollaborationsService();
+//   const notesService = new NotesService();
+//   const usersService = new UsersService();
+//   const authenticationsService = new AuthenticationsService();
 
-//   // registrasi satu plugin
-//   await server.register({
-//     plugin: notesPlugin,
-//     options: { notes: [] },
+//   const server = Hapi.server({
+//     port: process.env.PORT,
+//     host: process.env.HOST,
+//     routes: {
+//       cors: {
+//         origin: ['*'],
+//       },
+//     },
 //   });
+
+//   // server.route(routes);
+//   // registrasi plugin eksternal
+//   await server.register([
+//     {
+//       plugin: Jwt,
+//     },
+//   ]);
+//   // mendefinisikan strategy autentikasi jwt
+//   server.auth.strategy('notesapp_jwt', 'jwt', {
+//     keys: process.env.ACCESS_TOKEN_KEY,
+//     verify: {
+//       aud: false,
+//       iss: false,
+//       sub: false,
+//       maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+//     },
+//     validate: (artifacts) => ({
+//       isValid: true,
+//       credentials: {
+//         id: artifacts.decoded.payload.id,
+//       },
+//     }),
+//   });
+
+//   await server.register([
+//     {
+//       plugin: notes,
+//       options: {
+//         service: notesService,
+//         validator: NotesValidator,
+//       },
+//     },
+//     {
+//       plugin: users,
+//       options: {
+//         service: usersService,
+//         validator: UsersValidator,
+//       },
+//     },
+//     {
+//       plugin: authentications,
+//       options: {
+//         authenticationsService,
+//         usersService,
+//         tokenManager: TokenManager,
+//         validator: AuthenticationsValidator,
+//       },
+//     },
+//     {
+//       plugin: collaborations,
+//       options: {
+//         collaborationsService,
+//         notesService,
+//         validator: CollaborationsValidator,
+//       },
+//     },
+//   ]);
+
 //   await server.start();
-// }
-// init()
+//   console.log(`Server berjalan pada ${server.info.uri}`);
+// };
+
+// init();
+
+// // const notesPlugin = require('./notesPlugin');
+// // const Hapi = require('@hapi/hapi');
+// // const init = async () => {
+// //   const server = Hapy.server();
+
+// //   // registrasi satu plugin
+// //   await server.register({
+// //     plugin: notesPlugin,
+// //     options: { notes: [] },
+// //   });
+// //   await server.start();
+// // }
+// // init()
