@@ -3,7 +3,6 @@ const InvariantError = require('../../exceptions/InvariantError');
 
 const ExportValidator = {
   validateExportNotesPayload: (payload) => {
-    console.log(payload);
     const validateResult = ExportNotesPayloadSchema.validate(payload);
 
     if (validateResult.error) {

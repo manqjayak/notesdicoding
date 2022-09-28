@@ -11,7 +11,6 @@ const ProducerService = {
     await channel.sendToQueue(queue, Buffer.from(message));
 
     setTimeout(() => {
-      console.log('Berahsil!');
     }, 1000);
   },
 };
